@@ -1,6 +1,8 @@
 import { getSessionFromCookies } from "@/lib/auth";
 import { ManagerSidebar } from "@/components/admin/ManagerSidebar";
 
+export const dynamic = "force-dynamic";
+
 export default async function ManagerLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionFromCookies();
   return (
