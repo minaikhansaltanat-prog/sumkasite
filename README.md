@@ -59,6 +59,28 @@ npx prisma studio   # деректер қорын браузерде қарау
 3. **Домен/SSL/Vercel/Railway деплой** — нақты есептік жазбалар/домен қажет.
 4. **Telegram bot хабарландыру** — `.env`-де орын бар, бірақ боты іске қосылмаған.
 
+## Railway-ге деплой
+
+1. `npm i -g @railway/cli` немесе `npx railway` арқылы қолдану
+2. `railway login` — браузерде GitHub/Email арқылы кіру
+3. Жоба түбірінде: `railway init` (жаңа проект жасау)
+4. Railway дашбордында (немесе CLI) қызметке **2 volume** қосу керек:
+   - Mount path: `/app/public/uploads` — жүктелген суреттер үшін
+   - Mount path: `/app/prisma/data` — SQLite дерекқор файлы үшін
+5. Environment Variables бөлімінде (Railway дашборд) `.env.example`-дегі барлық
+   айнымалыны қойыңыз, бірақ:
+   - `DATABASE_URL="file:/app/prisma/data/prod.db"`
+   - `JWT_SECRET` — жаңа, күшті random мән (dev мәнін қолданбаңыз)
+   - `ADMIN_PASSWORD` — жаңа, күшті пароль
+   - `NEXT_PUBLIC_SITE_URL` — Railway берген домен (кейін өз доменіңізге өзгертесіз)
+6. `railway up` — ағымдағы кодты деплой ету
+7. Бірінші деплойдан кейін, каталогты толтыру үшін бір рет: `railway run npm run db:seed`
+8. Өз доменді қосу: Railway дашборд → Settings → Domains → Custom Domain →
+   домен провайдеріңізде көрсетілген CNAME жазбасын қосу.
+
+`railway.json` файлы `prisma migrate deploy && next start` командасын автоматты
+іске қосады, сондықтан әр деплойда дерекқор схемасы өзі жаңарады.
+
 ## Қалталар
 
 - 281 нақты сурет (`Aralas`, `Balalar`, `Man 2500 tg`) seed скрипт арқылы каталогқа

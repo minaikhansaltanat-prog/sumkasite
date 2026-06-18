@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate",
+    "deploy:start": "prisma migrate deploy && next start -p ${PORT:-3000}"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
