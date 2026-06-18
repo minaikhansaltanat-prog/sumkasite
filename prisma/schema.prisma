@@ -5,12 +5,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// SQLite Prisma connector enumdarды қолдамайды — рөл/мәртебе string ретінде
-// сақталады, типтер lib/types.ts ішінде валидацияланады.
+// Рөл/мәртебе string ретінде сақталады, типтер lib/types.ts ішінде валидацияланады.
 // Role: "ADMIN" | "MANAGER"
 // OrderStatus: "NEW" | "CONTACTED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "CANCELLED"
 
