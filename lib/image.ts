@@ -38,7 +38,11 @@ export async function saveProductImage(
   await writeFile(path.join(dir, thumbName), thumbBuffer);
 
   return {
-    url: `/uploads/${subdir}/${mainName}`,
-    thumbUrl: `/uploads/${subdir}/${thumbName}`,
+    // Next.js-тің "next start" production режимінде /public ішіндегі файлдар
+    // тізімі сервер ҚОСЫЛҰАН сәтте бір рет жадыда кэштеледі — кейін volume-ге
+    // қосылған жаңа суреттер серверді қайта іске қоспай көрінбейді. Сол үшін
+    // /api/files/[...path] route handler арқылы дискіден әр сұраныста оқимыз.
+    url: `/api/files/${subdir}/${mainName}`,
+    thumbUrl: `/api/files/${subdir}/${thumbName}`,
   };
 }
