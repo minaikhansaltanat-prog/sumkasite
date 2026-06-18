@@ -22,7 +22,7 @@ npm run dev              # http://localhost:3000
 
 | Рөл | Email | Пароль |
 |---|---|---|
-| ADMIN | minaikhan.saltanat@gmail.com | `/c/tmp/railway_admin_password.txt` файлында сақталған (production) |
+| ADMIN | minaikhan.saltanat@gmail.com | Railway-де орнатылған (`railway variable list --service web --kv \| grep ADMIN_PASSWORD`) |
 | MANAGER (демо) | manager@samga.kz | Manager2026! |
 
 Кіру беті: `/admin/login` — рөліне қарай `/admin/dashboard` немесе `/manager`-ге бағыттайды.
