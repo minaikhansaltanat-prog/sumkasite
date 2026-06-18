@@ -1,0 +1,107 @@
+// SAMGA — B2B сумка каталогы. Деректер қоры моделі.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite Prisma connector enumdarды қолдамайды — рөл/мәртебе string ретінде
+// сақталады, типтер lib/types.ts ішінде валидацияланады.
+// Role: "ADMIN" | "MANAGER"
+// OrderStatus: "NEW" | "CONTACTED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "CANCELLED"
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("MANAGER")
+  failedLogins Int       @default(0)
+  lockedUntil  DateTime?
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameKaz   String
+  nameRus   String
+  imageUrl  String?
+  order     Int       @default(0)
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  sku         String         @unique
+  nameKaz     String
+  nameRus     String
+  descKaz     String         @default("")
+  descRus     String         @default("")
+  price       Int
+  retailPrice Int?
+  minOrder    Int            @default(10)
+  bundleSize  Int            @default(1)
+  stock       Int            @default(0)
+  material    String         @default("")
+  color       String         @default("")
+  size        String         @default("")
+  categoryId  String
+  category    Category       @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  orders      Order[]
+  isPublished Boolean        @default(true)
+  isNew       Boolean        @default(false)
+  isHit       Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([categoryId])
+  @@index([isPublished])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  thumbUrl  String?
+  order     Int     @default(0)
+  isMain    Boolean @default(false)
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  clientName  String
+  phone       String
+  city        String      @default("")
+  productId   String?
+  product     Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  sku         String      @default("")
+  quantity    Int         @default(10)
+  message     String      @default("")
+  status      String      @default("NEW")
+  managerId   String?
+  manager     User?       @relation(fields: [managerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([status])
+  @@index([managerId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  message   String
+  createdAt DateTime @default(now())
+}
