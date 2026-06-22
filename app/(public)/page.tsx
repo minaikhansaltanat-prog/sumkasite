@@ -18,11 +18,11 @@ export default async function HomePage() {
   return (
     <>
       <Hero images={heroImages} />
+      <AdvantagesSection />
       <StatsBar productCount={stats.productCount} />
       <HitsSection products={hits} />
       <CategoriesGrid categories={categories} />
       <WhatsAppCTA />
-      <AdvantagesSection />
     </>
   );
 }

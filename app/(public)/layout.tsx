@@ -1,7 +1,9 @@
 import { LangProvider } from "@/components/layout/LangProvider";
+import { TopBar } from "@/components/layout/TopBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
+import { getCategories } from "@/lib/queries";
 
 // DB-ге қатысты беттер build кезінде емес, нақты сұраныс кезінде рендерленеді
 // (Railway-дегі ішкі Postgres хосты тек runtime-да қолжетімді, build sandbox-та емес)
@@ -21,13 +23,15 @@ const ORG_JSON_LD = {
   },
 };
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const categories = await getCategories();
   return (
     <LangProvider>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSON_LD) }} />
-      <Header />
+      <TopBar />
+      <Header categories={categories} />
       <main className="min-h-screen bg-white">{children}</main>
-      <Footer />
+      <Footer categories={categories} />
       <WhatsAppFloatingButton />
     </LangProvider>
   );

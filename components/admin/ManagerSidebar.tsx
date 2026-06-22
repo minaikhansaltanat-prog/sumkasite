@@ -32,7 +32,7 @@ export function ManagerSidebar({ name }: { name: string }) {
             href={item.href}
             className={clsx(
               "px-3 py-2.5 rounded-card text-sm font-medium transition-colors",
-              pathname === item.href ? "bg-gold text-ink" : "text-white/70 hover:bg-white/5"
+              pathname === item.href ? "bg-gold text-white" : "text-white/70 hover:bg-white/5"
             )}
           >
             {item.label}

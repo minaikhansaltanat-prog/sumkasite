@@ -1,9 +1,13 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { clsx } from "clsx";
 import { useLang } from "@/components/layout/LangProvider";
+import { ChevronRight, WhatsAppIcon, FlameIcon } from "@/components/ui/icons";
+import { buildGeneralWhatsAppLink } from "@/lib/whatsapp";
 
 export interface FilterCategory {
   slug: string;
@@ -11,12 +15,22 @@ export interface FilterCategory {
   nameRus: string;
 }
 
+export interface SidebarBestseller {
+  slug: string;
+  nameKaz: string;
+  nameRus: string;
+  price: number;
+  images: { url: string; thumbUrl: string | null }[];
+}
+
 export function FilterSidebar({
   categories,
   materials,
+  bestsellers = [],
 }: {
   categories: FilterCategory[];
   materials: string[];
+  bestsellers?: SidebarBestseller[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,91 +61,149 @@ export function FilterSidebar({
     startTransition(() => router.push(pathname));
   }
 
-  const content = (
-    <div className="flex flex-col gap-6">
-      <div>
-        <div className="label-tag mb-3">{t("catalog", "filterCategory")}</div>
-        <div className="flex flex-col gap-1">
+  const categoriesWidget = (
+    <div className="widget">
+      <div className="widget-title">{t("ui", "categoriesWidgetTitle")}</div>
+      <div className="flex flex-col gap-0.5">
+        <button
+          onClick={() => update({ category: "" })}
+          className={clsx(
+            "group flex items-center justify-between text-left text-sm py-2 px-2 rounded transition-colors",
+            !current.category ? "bg-gold/10 text-gold font-bold" : "text-ink-text hover:bg-cream"
+          )}
+        >
+          {t("catalog", "allCategories")}
+          <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
+        </button>
+        {categories.map((c) => (
           <button
-            onClick={() => update({ category: "" })}
+            key={c.slug}
+            onClick={() => update({ category: c.slug })}
             className={clsx(
-              "text-left text-sm py-1.5 px-2 rounded transition-colors",
-              !current.category ? "bg-gold/15 text-gold font-semibold" : "text-ink-text hover:bg-cream"
+              "group flex items-center justify-between text-left text-sm py-2 px-2 rounded transition-colors",
+              current.category === c.slug ? "bg-gold/10 text-gold font-bold" : "text-ink-text hover:bg-cream"
             )}
           >
-            {t("catalog", "allCategories")}
+            {lang === "kk" ? c.nameKaz : c.nameRus}
+            <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
           </button>
-          {categories.map((c) => (
-            <button
-              key={c.slug}
-              onClick={() => update({ category: c.slug })}
-              className={clsx(
-                "text-left text-sm py-1.5 px-2 rounded transition-colors",
-                current.category === c.slug ? "bg-gold/15 text-gold font-semibold" : "text-ink-text hover:bg-cream"
-              )}
-            >
-              {lang === "kk" ? c.nameKaz : c.nameRus}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
+    </div>
+  );
 
-      <div>
-        <div className="label-tag mb-3">{t("catalog", "filterPrice")}</div>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder="500"
-            defaultValue={current.min}
-            onBlur={(e) => update({ min: e.target.value })}
-            className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
-          />
-          <span className="text-ink-muted">—</span>
-          <input
-            type="number"
-            placeholder="15000"
-            defaultValue={current.max}
-            onBlur={(e) => update({ max: e.target.value })}
-            className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
-          />
-        </div>
-      </div>
-
-      {materials.length > 0 && (
+  const filtersWidget = (
+    <div className="widget">
+      <div className="widget-title">{t("catalog", "filterSort")}</div>
+      <div className="flex flex-col gap-5">
         <div>
-          <div className="label-tag mb-3">{t("product", "material")}</div>
+          <div className="label-tag mb-2">{t("catalog", "filterPrice")}</div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              placeholder="500"
+              defaultValue={current.min}
+              onBlur={(e) => update({ min: e.target.value })}
+              className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
+            />
+            <span className="text-ink-muted">—</span>
+            <input
+              type="number"
+              placeholder="15000"
+              defaultValue={current.max}
+              onBlur={(e) => update({ max: e.target.value })}
+              className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
+            />
+          </div>
+        </div>
+
+        {materials.length > 0 && (
+          <div>
+            <div className="label-tag mb-2">{t("product", "material")}</div>
+            <select
+              value={current.material}
+              onChange={(e) => update({ material: e.target.value })}
+              className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
+            >
+              <option value="">{t("catalog", "allCategories")}</option>
+              {materials.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div>
+          <div className="label-tag mb-2">{t("catalog", "filterSort")}</div>
           <select
-            value={current.material}
-            onChange={(e) => update({ material: e.target.value })}
+            value={current.sort}
+            onChange={(e) => update({ sort: e.target.value })}
             className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
           >
-            <option value="">{t("catalog", "allCategories")}</option>
-            {materials.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
+            <option value="new">{t("catalog", "sortNew")}</option>
+            <option value="price_asc">{t("catalog", "sortPriceAsc")}</option>
+            <option value="price_desc">{t("catalog", "sortPriceDesc")}</option>
+            <option value="hit">{t("catalog", "sortHit")}</option>
           </select>
         </div>
-      )}
 
-      <div>
-        <div className="label-tag mb-3">{t("catalog", "filterSort")}</div>
-        <select
-          value={current.sort}
-          onChange={(e) => update({ sort: e.target.value })}
-          className="w-full h-10 px-3 rounded-card border border-line text-sm focus:border-gold outline-none"
-        >
-          <option value="new">{t("catalog", "sortNew")}</option>
-          <option value="price_asc">{t("catalog", "sortPriceAsc")}</option>
-          <option value="price_desc">{t("catalog", "sortPriceDesc")}</option>
-          <option value="hit">{t("catalog", "sortHit")}</option>
-        </select>
+        <button onClick={reset} className="btn-secondary h-10 text-xs">
+          {t("catalog", "resetFilters")}
+        </button>
       </div>
+    </div>
+  );
 
-      <button onClick={reset} className="btn-secondary h-10 text-xs">
-        {t("catalog", "resetFilters")}
-      </button>
+  const quickOrderWidget = (
+    <div className="widget bg-ink text-white border-ink">
+      <div className="flex items-center gap-2 mb-2">
+        <WhatsAppIcon className="w-5 h-5 text-gold-light" />
+        <div className="font-display text-sm font-bold uppercase tracking-[0.08em]">{t("ui", "quickOrderTitle")}</div>
+      </div>
+      <p className="text-xs text-white/70 mb-4">{t("ui", "quickOrderDesc")}</p>
+      <a href={buildGeneralWhatsAppLink()} target="_blank" rel="noopener" className="btn-primary w-full h-10 text-xs">
+        {t("home", "ctaWhatsapp")}
+      </a>
+    </div>
+  );
+
+  const bestsellersWidget = bestsellers.length > 0 && (
+    <div className="widget">
+      <div className="widget-title flex items-center gap-1.5">
+        <FlameIcon className="w-4 h-4 text-gold" />
+        {t("ui", "bestsellersTitle")}
+      </div>
+      <div className="flex flex-col gap-3">
+        {bestsellers.map((b) => {
+          const img = b.images[0];
+          return (
+            <Link key={b.slug} href={`/catalog/${b.slug}`} className="flex items-center gap-3 group">
+              <div className="relative w-14 h-14 shrink-0 rounded-card overflow-hidden bg-cream">
+                {img && (
+                  <Image src={img.thumbUrl || img.url} alt="" fill className="object-cover" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-ink-text line-clamp-2 group-hover:text-gold transition-colors">
+                  {lang === "kk" ? b.nameKaz : b.nameRus}
+                </div>
+                <div className="price-mono text-xs text-gold font-bold mt-0.5">
+                  {b.price.toLocaleString("ru-RU")} {t("catalog", "perDana")}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const content = (
+    <div className="flex flex-col gap-4">
+      {categoriesWidget}
+      {filtersWidget}
     </div>
   );
 
@@ -143,8 +215,11 @@ export function FilterSidebar({
         </button>
       </div>
 
-      <aside className="hidden lg:block w-64 shrink-0 sticky top-24 self-start bg-cream rounded-card p-5">
-        {content}
+      <aside className="hidden lg:flex w-72 shrink-0 sticky top-28 self-start flex-col gap-4">
+        {categoriesWidget}
+        {quickOrderWidget}
+        {bestsellersWidget}
+        {filtersWidget}
       </aside>
 
       {mobileOpen && (
@@ -153,7 +228,7 @@ export function FilterSidebar({
           <div className="absolute top-0 left-0 right-0 bg-white rounded-b-2xl p-5 max-h-[85vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <span className="font-display text-lg font-bold">Сүзгі</span>
-              <button onClick={() => setMobileOpen(false)} className="text-ink-muted text-2xl leading-none">
+              <button onClick={() => setMobileOpen(false)} className="text-ink-muted text-2xl leading-none cursor-pointer">
                 ×
               </button>
             </div>

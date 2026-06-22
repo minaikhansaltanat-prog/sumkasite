@@ -99,7 +99,7 @@ export function MultiImageUploader({
             >
               <Image src={img.thumbUrl || img.url} alt="" fill className="object-cover" />
               {img.isMain && (
-                <span className="absolute top-1 left-1 label-tag bg-gold text-ink px-1.5 py-0.5 rounded text-[10px]">
+                <span className="absolute top-1 left-1 label-tag bg-gold text-white px-1.5 py-0.5 rounded text-[10px]">
                   Негізгі
                 </span>
               )}

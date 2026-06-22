@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { clsx } from "clsx";
 import { useLang } from "@/components/layout/LangProvider";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { buildProductWhatsAppLink } from "@/lib/whatsapp";
@@ -12,6 +13,7 @@ export interface ProductCardData {
   nameKaz: string;
   nameRus: string;
   price: number;
+  retailPrice?: number | null;
   bundleSize: number;
   isNew: boolean;
   isHit: boolean;
@@ -37,14 +39,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-ink-muted text-sm">Сурет жоқ</div>
         )}
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          {product.isNew && (
-            <span className="label-tag bg-ink text-white px-2 py-1 rounded">{t("product", "new")}</span>
-          )}
-          {product.isHit && (
-            <span className="label-tag bg-gold text-ink px-2 py-1 rounded">{t("product", "hit")}</span>
-          )}
-        </div>
+        {product.isNew && <span className="ribbon bg-ink">{t("product", "new")}</span>}
+        {product.isHit && (
+          <span className={clsx("ribbon bg-gold", product.isNew && "top-10")}>{t("product", "hit")}</span>
+        )}
       </Link>
 
       <div className="flex flex-col gap-1.5 p-4 flex-1">
@@ -52,8 +50,15 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <Link href={`/catalog/${product.slug}`} className="font-medium text-ink-text leading-snug line-clamp-2 hover:text-gold">
           {name}
         </Link>
-        <div className="price-mono text-lg text-gold font-medium mt-1">
-          {product.price.toLocaleString("ru-RU")} {t("catalog", "perDana")}
+        <div className="flex items-baseline gap-2 mt-1">
+          <span className="price-mono text-lg text-gold font-bold">
+            {product.price.toLocaleString("ru-RU")} {t("catalog", "perDana")}
+          </span>
+          {!!product.retailPrice && (
+            <span className="price-mono text-xs text-ink-muted line-through">
+              {product.retailPrice.toLocaleString("ru-RU")} {t("common", "tenge")}
+            </span>
+          )}
         </div>
         <div className="text-xs text-ink-muted">
           {t("catalog", "bundle")}: {product.bundleSize} {t("catalog", "dana")}
@@ -71,7 +76,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             target="_blank"
             rel="noopener"
             aria-label="WhatsApp"
-            className="flex items-center justify-center h-10 w-10 rounded-card bg-[#25D366] text-white shrink-0"
+            className="flex items-center justify-center h-10 w-10 rounded-card bg-[#25D366] text-white shrink-0 hover:opacity-90 transition-opacity"
           >
             <WhatsAppIcon className="w-5 h-5" />
           </a>

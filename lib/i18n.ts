@@ -96,10 +96,29 @@ export const dictionary = {
   footer: {
     rights: { kk: "Барлық құқықтар қорғалған.", ru: "Все права защищены." },
     address: { kk: "Алматы", ru: "Алматы" },
+    colAbout: { kk: "Ақпарат", ru: "Информация" },
+    colCategories: { kk: "Санаттар", ru: "Категории" },
+    colContact: { kk: "Байланыс", ru: "Контакты" },
+    workHours: { kk: "Дс–Сб 9:00–19:00", ru: "Пн–Сб 9:00–19:00" },
   },
   common: {
     loading: { kk: "Жүктелуде...", ru: "Загрузка..." },
     tenge: { kk: "тг", ru: "тг" },
+  },
+  topbar: {
+    hours: { kk: "Дс–Сб: 09:00–19:00", ru: "Пн–Сб: 09:00–19:00" },
+    helpline: { kk: "Тегін кеңес", ru: "Бесплатная консультация" },
+  },
+  ui: {
+    searchPlaceholder: { kk: "Каталогтан сумка іздеу...", ru: "Поиск сумок в каталоге..." },
+    quickOrderTitle: { kk: "Жылдам тапсырыс", ru: "Быстрый заказ" },
+    quickOrderDesc: {
+      kk: "Менеджерге жазып, бағаны нақтылаңыз",
+      ru: "Напишите менеджеру и уточните цену",
+    },
+    bestsellersTitle: { kk: "Хит сатылымдар", ru: "Хиты продаж" },
+    categoriesWidgetTitle: { kk: "Санаттар", ru: "Категории" },
+    allCategoriesLinkAll: { kk: "Барлық каталог", ru: "Весь каталог" },
   },
 } as const;
 

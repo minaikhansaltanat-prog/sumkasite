@@ -1,24 +1,27 @@
 "use client";
 
 import { useLang } from "@/components/layout/LangProvider";
+import { BoxIcon, TruckIcon, ShieldIcon } from "@/components/ui/icons";
 
 export function AdvantagesSection() {
   const { t } = useLang();
   const items = [
-    { title: t("home", "advTitle1"), desc: t("home", "advDesc1") },
-    { title: t("home", "advTitle2"), desc: t("home", "advDesc2") },
-    { title: t("home", "advTitle3"), desc: t("home", "advDesc3") },
+    { title: t("home", "advTitle1"), desc: t("home", "advDesc1"), Icon: BoxIcon },
+    { title: t("home", "advTitle2"), desc: t("home", "advDesc2"), Icon: TruckIcon },
+    { title: t("home", "advTitle3"), desc: t("home", "advDesc3"), Icon: ShieldIcon },
   ];
   return (
-    <section className="container-page py-16">
-      <div className="grid sm:grid-cols-3 gap-8">
-        {items.map((item) => (
-          <div key={item.title} className="text-center px-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-gold/15 flex items-center justify-center mb-4">
-              <span className="w-2.5 h-2.5 rounded-full bg-gold" />
+    <section className="bg-cream border-y border-line">
+      <div className="container-page py-8 grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-line">
+        {items.map(({ title, desc, Icon }) => (
+          <div key={title} className="flex items-center gap-4 py-4 sm:py-0 sm:px-6 first:sm:pl-0">
+            <div className="w-11 h-11 shrink-0 rounded-full bg-gold/10 flex items-center justify-center">
+              <Icon className="w-5 h-5 text-gold" />
             </div>
-            <h3 className="font-display text-lg font-bold">{item.title}</h3>
-            <p className="text-ink-muted mt-2 text-sm">{item.desc}</p>
+            <div>
+              <h3 className="font-display text-sm font-bold text-ink-text">{title}</h3>
+              <p className="text-ink-muted text-xs mt-0.5">{desc}</p>
+            </div>
           </div>
         ))}
       </div>

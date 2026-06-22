@@ -7,37 +7,47 @@
     scroll-behavior: smooth;
   }
   body {
-    font-family: var(--font-inter), sans-serif;
+    font-family: var(--font-body), sans-serif;
   }
   h1, h2, h3, .font-display {
-    font-family: var(--font-playfair), serif;
+    font-family: var(--font-display), sans-serif;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center h-12 px-6 rounded-card text-sm font-semibold tracking-wide transition-colors;
+    @apply inline-flex items-center justify-center h-12 px-6 rounded-card text-sm font-bold tracking-wide transition-colors cursor-pointer;
   }
   .btn-primary {
-    @apply btn bg-gold text-ink hover:bg-gold-light;
+    @apply btn bg-gold text-white shadow-sm hover:bg-gold-light;
   }
   .btn-secondary {
-    @apply btn bg-transparent border-[1.5px] border-gold text-gold hover:bg-gold hover:text-ink;
+    @apply btn bg-transparent border-[1.5px] border-ink text-ink-text hover:bg-ink hover:text-white;
   }
   .btn-ghost {
-    @apply btn bg-transparent text-white hover:text-gold;
+    @apply btn bg-transparent text-white hover:text-gold-light;
   }
   .btn-danger {
     @apply btn bg-danger text-white hover:opacity-90;
   }
   .card {
-    @apply bg-white border border-line rounded-card transition-shadow hover:shadow-lg hover:border-gold;
+    @apply bg-white border border-line rounded-card transition-all hover:shadow-lg hover:border-gold/50 overflow-hidden;
   }
   .label-tag {
-    @apply text-xs uppercase tracking-[0.1em] text-ink-muted;
+    @apply text-xs uppercase tracking-[0.12em] text-ink-muted;
   }
   .container-page {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .widget {
+    @apply bg-white border border-line rounded-card p-5;
+  }
+  .widget-title {
+    @apply font-display text-sm font-bold uppercase tracking-[0.08em] text-ink pb-3 mb-3 border-b-2 border-gold/30;
+  }
+  .ribbon {
+    @apply absolute left-0 top-3 z-10 pl-3 pr-4 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-ribbon;
+    clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%);
   }
 }
 

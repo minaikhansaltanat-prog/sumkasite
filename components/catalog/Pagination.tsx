@@ -37,7 +37,7 @@ export function Pagination({ page, totalPages }: { page: number; totalPages: num
             onClick={() => go(p)}
             className={clsx(
               "h-10 w-10 rounded-card text-sm font-medium",
-              p === page ? "bg-gold text-ink" : "border border-line hover:border-gold"
+              p === page ? "bg-gold text-white" : "border border-line hover:border-gold"
             )}
           >
             {p}

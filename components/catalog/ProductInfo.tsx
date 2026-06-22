@@ -43,7 +43,7 @@ export function ProductInfo({ product }: { product: ProductInfoData }) {
 
       <div className="flex gap-2 mb-2">
         {product.isNew && <span className="label-tag bg-ink text-white px-2 py-1 rounded">{t("product", "new")}</span>}
-        {product.isHit && <span className="label-tag bg-gold text-ink px-2 py-1 rounded">{t("product", "hit")}</span>}
+        {product.isHit && <span className="label-tag bg-gold text-white px-2 py-1 rounded">{t("product", "hit")}</span>}
       </div>
 
       <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-text">{name}</h1>

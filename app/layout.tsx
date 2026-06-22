@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
+import { Unbounded, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+const unbounded = Unbounded({
   subsets: ["latin", "cyrillic"],
-  weight: ["600", "700"],
-  variable: "--font-playfair",
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
   display: "swap",
 });
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="kk">
-      <body className={`${playfair.variable} ${inter.variable} ${jbMono.variable} font-sans antialiased bg-white text-ink-text`}>
+      <body className={`${unbounded.variable} ${manrope.variable} ${jbMono.variable} font-sans antialiased bg-white text-ink-text`}>
         {children}
       </body>
     </html>
