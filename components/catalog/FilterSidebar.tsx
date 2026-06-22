@@ -6,13 +6,15 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { clsx } from "clsx";
 import { useLang } from "@/components/layout/LangProvider";
-import { ChevronRight, WhatsAppIcon, FlameIcon } from "@/components/ui/icons";
+import { ChevronRight, ChevronDown, WhatsAppIcon, FlameIcon } from "@/components/ui/icons";
 import { buildGeneralWhatsAppLink } from "@/lib/whatsapp";
 
 export interface FilterCategory {
   slug: string;
   nameKaz: string;
   nameRus: string;
+  totalCount?: number;
+  children?: FilterCategory[];
 }
 
 export interface SidebarBestseller {
@@ -38,6 +40,9 @@ export function FilterSidebar({
   const { lang, t } = useLang();
   const [, startTransition] = useTransition();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(
+    categories.find((c) => c.children?.some((s) => s.slug === searchParams.get("category")))?.slug ?? null
+  );
 
   const current = {
     category: searchParams.get("category") || "",
@@ -75,19 +80,54 @@ export function FilterSidebar({
           {t("catalog", "allCategories")}
           <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
         </button>
-        {categories.map((c) => (
-          <button
-            key={c.slug}
-            onClick={() => update({ category: c.slug })}
-            className={clsx(
-              "group flex items-center justify-between text-left text-sm py-2 px-2 rounded transition-colors",
-              current.category === c.slug ? "bg-gold/10 text-gold font-bold" : "text-ink-text hover:bg-cream"
-            )}
-          >
-            {lang === "kk" ? c.nameKaz : c.nameRus}
-            <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
-          </button>
-        ))}
+        {categories.map((c) => {
+          const hasChildren = !!c.children?.length;
+          const isExpanded = expanded === c.slug;
+          return (
+            <div key={c.slug}>
+              <div className="flex items-center">
+                <button
+                  onClick={() => update({ category: c.slug })}
+                  className={clsx(
+                    "group flex-1 flex items-center justify-between text-left text-sm py-2 px-2 rounded transition-colors",
+                    current.category === c.slug ? "bg-gold/10 text-gold font-bold" : "text-ink-text hover:bg-cream"
+                  )}
+                >
+                  <span className="flex items-center gap-1.5">
+                    {lang === "kk" ? c.nameKaz : c.nameRus}
+                    {c.totalCount === 0 && <span className="text-[10px] text-gold normal-case">жақын­да</span>}
+                  </span>
+                  {!hasChildren && <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />}
+                </button>
+                {hasChildren && (
+                  <button
+                    aria-label="Ішкі санаттар"
+                    onClick={() => setExpanded((cur) => (cur === c.slug ? null : c.slug))}
+                    className="p-2 cursor-pointer text-ink-muted"
+                  >
+                    <ChevronDown className={clsx("w-3.5 h-3.5 transition-transform", isExpanded && "rotate-180")} />
+                  </button>
+                )}
+              </div>
+              {hasChildren && isExpanded && (
+                <div className="flex flex-col pl-3 border-l border-line ml-2 mb-1">
+                  {c.children!.map((sub) => (
+                    <button
+                      key={sub.slug}
+                      onClick={() => update({ category: sub.slug })}
+                      className={clsx(
+                        "text-left text-xs py-1.5 px-2 rounded transition-colors",
+                        current.category === sub.slug ? "text-gold font-bold" : "text-ink-muted hover:text-ink-text"
+                      )}
+                    >
+                      {lang === "kk" ? sub.nameKaz : sub.nameRus}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

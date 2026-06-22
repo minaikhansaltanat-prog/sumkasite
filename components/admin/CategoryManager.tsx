@@ -5,20 +5,26 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SingleImageUpload } from "./SingleImageUpload";
 
-interface Category {
+interface CategoryNode {
   id: string;
   slug: string;
   nameKaz: string;
   nameRus: string;
   imageUrl: string | null;
-  order: number;
-  _count?: { products: number };
+  productCount: number;
+  totalCount: number;
+  children: CategoryNode[];
 }
 
-export function CategoryManager({ categories }: { categories: Category[] }) {
+type ModalState =
+  | { mode: "create-main" }
+  | { mode: "create-sub"; parentId: string; parentName: string }
+  | { mode: "edit"; category: CategoryNode }
+  | null;
+
+export function CategoryManager({ tree }: { tree: CategoryNode[] }) {
   const router = useRouter();
-  const [editing, setEditing] = useState<Category | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [modal, setModal] = useState<ModalState>(null);
 
   async function remove(id: string) {
     if (!confirm("Категорияны жою керек пе?")) return;
@@ -31,20 +37,20 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     router.refresh();
   }
 
-  async function move(cat: Category, dir: -1 | 1) {
-    const idx = categories.findIndex((c) => c.id === cat.id);
-    const target = categories[idx + dir];
+  async function move(list: CategoryNode[], item: CategoryNode, dir: -1 | 1) {
+    const idx = list.findIndex((c) => c.id === item.id);
+    const target = list[idx + dir];
     if (!target) return;
     await Promise.all([
-      fetch(`/api/categories/${cat.id}`, {
+      fetch(`/api/categories/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order: target.order }),
+        body: JSON.stringify({ order: idx + dir }),
       }),
       fetch(`/api/categories/${target.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order: cat.order }),
+        body: JSON.stringify({ order: idx }),
       }),
     ]);
     router.refresh();
@@ -54,40 +60,74 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-display text-2xl font-bold">Категориялар</h1>
-        <button onClick={() => setCreating(true)} className="btn-primary">+ Жаңа категория</button>
+        <button onClick={() => setModal({ mode: "create-main" })} className="btn-primary">
+          + Жаңа категория
+        </button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((c, i) => (
-          <div key={c.id} className="card p-4 flex gap-3">
-            <div className="relative w-16 h-16 rounded-card overflow-hidden bg-cream shrink-0">
-              {c.imageUrl && <Image src={c.imageUrl} alt="" fill className="object-cover" />}
-            </div>
-            <div className="flex-1">
-              <div className="font-semibold">{c.nameKaz}</div>
-              <div className="text-sm text-ink-muted">{c.nameRus}</div>
-              <div className="text-xs text-ink-muted mt-1">{c._count?.products ?? 0} өнім</div>
-              <div className="flex gap-2 mt-2 text-xs">
-                <button onClick={() => move(c, -1)} disabled={i === 0} className="text-ink-muted disabled:opacity-30">↑</button>
-                <button onClick={() => move(c, 1)} disabled={i === categories.length - 1} className="text-ink-muted disabled:opacity-30">↓</button>
-                <button onClick={() => setEditing(c)} className="text-gold">Өзгерту</button>
-                <button onClick={() => remove(c.id)} className="text-danger">Жою</button>
+      <div className="flex flex-col gap-5">
+        {tree.map((main, i) => (
+          <div key={main.id} className="card p-5">
+            <div className="flex gap-4">
+              <div className="relative w-16 h-16 rounded-card overflow-hidden bg-cream shrink-0">
+                {main.imageUrl && <Image src={main.imageUrl} alt="" fill className="object-cover" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-bold text-lg">{main.nameKaz}</span>
+                  {main.totalCount === 0 && (
+                    <span className="label-tag bg-gold/10 text-gold px-1.5 py-0.5 rounded">Жаңа</span>
+                  )}
+                </div>
+                <div className="text-sm text-ink-muted">{main.nameRus}</div>
+                <div className="text-xs text-ink-muted mt-1">
+                  {main.productCount} өнім тікелей · {main.totalCount} жалпы (ішкі санаттармен)
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5 text-xs items-end shrink-0">
+                <div className="flex gap-2">
+                  <button onClick={() => move(tree, main, -1)} disabled={i === 0} className="text-ink-muted disabled:opacity-30 cursor-pointer">↑</button>
+                  <button onClick={() => move(tree, main, 1)} disabled={i === tree.length - 1} className="text-ink-muted disabled:opacity-30 cursor-pointer">↓</button>
+                  <button onClick={() => setModal({ mode: "edit", category: main })} className="text-gold cursor-pointer">Өзгерту</button>
+                  <button onClick={() => remove(main.id)} className="text-danger cursor-pointer">Жою</button>
+                </div>
+                <button
+                  onClick={() => setModal({ mode: "create-sub", parentId: main.id, parentName: main.nameKaz })}
+                  className="text-ink-muted hover:text-gold cursor-pointer"
+                >
+                  + Ішкі санат
+                </button>
               </div>
             </div>
+
+            {main.children.length > 0 && (
+              <div className="mt-4 pl-4 border-l-2 border-line flex flex-col gap-2">
+                {main.children.map((sub, j) => (
+                  <div key={sub.id} className="flex items-center justify-between gap-3 py-1.5">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-ink-text">{sub.nameKaz}</div>
+                      <div className="text-xs text-ink-muted">{sub.nameRus} · {sub.productCount} өнім</div>
+                    </div>
+                    <div className="flex gap-2 text-xs shrink-0">
+                      <button onClick={() => move(main.children, sub, -1)} disabled={j === 0} className="text-ink-muted disabled:opacity-30 cursor-pointer">↑</button>
+                      <button onClick={() => move(main.children, sub, 1)} disabled={j === main.children.length - 1} className="text-ink-muted disabled:opacity-30 cursor-pointer">↓</button>
+                      <button onClick={() => setModal({ mode: "edit", category: sub })} className="text-gold cursor-pointer">Өзгерту</button>
+                      <button onClick={() => remove(sub.id)} className="text-danger cursor-pointer">Жою</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {(creating || editing) && (
+      {modal && (
         <CategoryFormModal
-          category={editing}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
+          state={modal}
+          onClose={() => setModal(null)}
           onSaved={() => {
-            setCreating(false);
-            setEditing(null);
+            setModal(null);
             router.refresh();
           }}
         />
@@ -97,29 +137,39 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
 }
 
 function CategoryFormModal({
-  category,
+  state,
   onClose,
   onSaved,
 }: {
-  category: Category | null;
+  state: Exclude<ModalState, null>;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [nameKaz, setNameKaz] = useState(category?.nameKaz ?? "");
-  const [nameRus, setNameRus] = useState(category?.nameRus ?? "");
-  const [imageUrl, setImageUrl] = useState<string | null>(category?.imageUrl ?? null);
+  const isEdit = state.mode === "edit";
+  const initial = isEdit ? state.category : null;
+  const [nameKaz, setNameKaz] = useState(initial?.nameKaz ?? "");
+  const [nameRus, setNameRus] = useState(initial?.nameRus ?? "");
+  const [imageUrl, setImageUrl] = useState<string | null>(initial?.imageUrl ?? null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const title = isEdit
+    ? "Категорияны өзгерту"
+    : state.mode === "create-sub"
+      ? `"${state.parentName}" ішіне жаңа ішкі санат`
+      : "Жаңа негізгі категория";
 
   async function submit() {
     setSaving(true);
     setError(null);
-    const url = category ? `/api/categories/${category.id}` : "/api/categories";
-    const method = category ? "PATCH" : "POST";
+    const url = isEdit ? `/api/categories/${state.category.id}` : "/api/categories";
+    const method = isEdit ? "PATCH" : "POST";
+    const body: Record<string, unknown> = { nameKaz, nameRus, imageUrl };
+    if (state.mode === "create-sub") body.parentId = state.parentId;
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nameKaz, nameRus, imageUrl }),
+      body: JSON.stringify(body),
     });
     const data = await res.json().catch(() => ({}));
     setSaving(false);
@@ -133,7 +183,7 @@ function CategoryFormModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-card p-6 w-full max-w-md">
-        <h2 className="font-display text-lg font-bold mb-4">{category ? "Категорияны өзгерту" : "Жаңа категория"}</h2>
+        <h2 className="font-display text-lg font-bold mb-4">{title}</h2>
         <div className="flex flex-col gap-3">
           <SingleImageUpload value={imageUrl} onChange={setImageUrl} />
           <input

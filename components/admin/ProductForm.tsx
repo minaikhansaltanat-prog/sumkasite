@@ -7,6 +7,7 @@ import { MultiImageUploader, type UploaderImage } from "./MultiImageUploader";
 interface CategoryOption {
   id: string;
   nameKaz: string;
+  children?: { id: string; nameKaz: string }[];
 }
 
 export interface ProductFormValues {
@@ -108,7 +109,14 @@ export function ProductForm({
         <Field label="Категория">
           <select required value={values.categoryId} onChange={(e) => set("categoryId", e.target.value)} className="input">
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.nameKaz}</option>
+              <optgroup key={c.id} label={c.nameKaz}>
+                <option value={c.id}>{c.nameKaz} (жалпы)</option>
+                {c.children?.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    &nbsp;&nbsp;↳ {sub.nameKaz}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </Field>

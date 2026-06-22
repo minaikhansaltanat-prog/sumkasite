@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { clsx } from "clsx";
 import { useLang } from "./LangProvider";
-import { MenuIcon, CloseIcon, SearchIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { MenuIcon, CloseIcon, SearchIcon, WhatsAppIcon, ChevronDown } from "@/components/ui/icons";
 import { buildGeneralWhatsAppLink } from "@/lib/whatsapp";
 
 const links = [
@@ -19,6 +19,8 @@ export interface HeaderCategory {
   slug: string;
   nameKaz: string;
   nameRus: string;
+  totalCount: number;
+  children: HeaderCategory[];
 }
 
 export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
@@ -26,6 +28,7 @@ export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
   const router = useRouter();
   const { lang, setLang, t } = useLang();
   const [open, setOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
 
   function onSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -87,21 +90,39 @@ export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
 
       {categories.length > 0 && (
         <div className="hidden lg:block border-t border-white/10 bg-ink-soft">
-          <div className="container-page flex items-center gap-6 h-11 overflow-x-auto">
+          <div className="container-page flex items-center gap-1 h-11 overflow-x-auto">
             <Link
               href="/catalog"
-              className="text-xs font-bold uppercase tracking-wide text-gold-light whitespace-nowrap"
+              className="text-xs font-bold uppercase tracking-wide text-gold-light whitespace-nowrap px-3"
             >
               {t("ui", "allCategoriesLinkAll")}
             </Link>
             {categories.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/catalog?category=${c.slug}`}
-                className="text-xs font-semibold uppercase tracking-wide text-white/75 hover:text-gold-light whitespace-nowrap transition-colors"
-              >
-                {lang === "kk" ? c.nameKaz : c.nameRus}
-              </Link>
+              <div key={c.slug} className="group relative h-11 flex items-center">
+                <Link
+                  href={`/catalog?category=${c.slug}`}
+                  className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-white/75 group-hover:text-gold-light whitespace-nowrap transition-colors px-3 h-full"
+                >
+                  {lang === "kk" ? c.nameKaz : c.nameRus}
+                  {c.children.length > 0 && <ChevronDown className="w-3 h-3" />}
+                  {c.totalCount === 0 && (
+                    <span className="ml-1 text-[10px] text-gold-light/80 normal-case">(жақын­да)</span>
+                  )}
+                </Link>
+                {c.children.length > 0 && (
+                  <div className="invisible group-hover:visible absolute left-0 top-full bg-white text-ink-text rounded-card shadow-xl border border-line py-2 min-w-[260px] z-50">
+                    {c.children.map((sub) => (
+                      <Link
+                        key={sub.slug}
+                        href={`/catalog?category=${sub.slug}`}
+                        className="block px-4 py-2 text-xs font-medium hover:bg-cream hover:text-gold transition-colors normal-case"
+                      >
+                        {lang === "kk" ? sub.nameKaz : sub.nameRus}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -135,16 +156,43 @@ export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
               </Link>
             ))}
             {categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 py-3 border-b border-white/5">
+              <div className="flex flex-col py-2 border-b border-white/5">
                 {categories.map((c) => (
-                  <Link
-                    key={c.slug}
-                    href={`/catalog?category=${c.slug}`}
-                    onClick={() => setOpen(false)}
-                    className="text-xs font-semibold uppercase px-2.5 py-1.5 rounded-full bg-white/10 text-white/80"
-                  >
-                    {lang === "kk" ? c.nameKaz : c.nameRus}
-                  </Link>
+                  <div key={c.slug}>
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/catalog?category=${c.slug}`}
+                        onClick={() => setOpen(false)}
+                        className="flex-1 py-2.5 text-sm font-semibold uppercase text-white/85"
+                      >
+                        {lang === "kk" ? c.nameKaz : c.nameRus}
+                        {c.totalCount === 0 && <span className="ml-2 text-[10px] text-gold-light normal-case">жақында</span>}
+                      </Link>
+                      {c.children.length > 0 && (
+                        <button
+                          aria-label="Ішкі санаттар"
+                          onClick={() => setMobileExpanded((cur) => (cur === c.slug ? null : c.slug))}
+                          className="p-2.5 cursor-pointer"
+                        >
+                          <ChevronDown className={clsx("w-4 h-4 transition-transform", mobileExpanded === c.slug && "rotate-180")} />
+                        </button>
+                      )}
+                    </div>
+                    {mobileExpanded === c.slug && c.children.length > 0 && (
+                      <div className="flex flex-col pl-3 pb-2">
+                        {c.children.map((sub) => (
+                          <Link
+                            key={sub.slug}
+                            href={`/catalog?category=${sub.slug}`}
+                            onClick={() => setOpen(false)}
+                            className="py-2 text-xs text-white/65 hover:text-gold-light"
+                          >
+                            {lang === "kk" ? sub.nameKaz : sub.nameRus}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             )}

@@ -20,6 +20,15 @@ const PRODUCT_INCLUDE = {
   category: true,
 };
 
+async function resolveCategoryFilterIds(categorySlug: string) {
+  const category = await prisma.category.findUnique({
+    where: { slug: categorySlug },
+    include: { children: { select: { id: true } } },
+  });
+  if (!category) return [];
+  return category.children.length > 0 ? [category.id, ...category.children.map((c) => c.id)] : [category.id];
+}
+
 export async function getProducts(filter: ProductFilter = {}) {
   const {
     categorySlug,
@@ -35,9 +44,11 @@ export async function getProducts(filter: ProductFilter = {}) {
     onlyPublished = true,
   } = filter;
 
+  const categoryIds = categorySlug ? await resolveCategoryFilterIds(categorySlug) : null;
+
   const where: Prisma.ProductWhereInput = {
     ...(onlyPublished ? { isPublished: true } : {}),
-    ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+    ...(categoryIds ? { categoryId: { in: categoryIds } } : {}),
     ...(minPrice ? { price: { gte: minPrice } } : {}),
     ...(maxPrice ? { price: { lte: maxPrice } } : {}),
     ...(material ? { material: { contains: material } } : {}),
@@ -95,6 +106,58 @@ export async function getRelatedProducts(categoryId: string, excludeId: string, 
 
 export async function getCategories() {
   return prisma.category.findMany({ orderBy: { order: "asc" } });
+}
+
+export interface CategoryTreeNode {
+  id: string;
+  slug: string;
+  nameKaz: string;
+  nameRus: string;
+  imageUrl: string | null;
+  productCount: number;
+  totalCount: number;
+  children: CategoryTreeNode[];
+}
+
+export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
+  const all = await prisma.category.findMany({
+    orderBy: { order: "asc" },
+    include: { _count: { select: { products: true } } },
+  });
+
+  const childrenByParent = new Map<string, typeof all>();
+  for (const c of all) {
+    if (!c.parentId) continue;
+    const list = childrenByParent.get(c.parentId) ?? [];
+    list.push(c);
+    childrenByParent.set(c.parentId, list);
+  }
+
+  return all
+    .filter((c) => !c.parentId)
+    .map((main) => {
+      const children = (childrenByParent.get(main.id) ?? []).map((child) => ({
+        id: child.id,
+        slug: child.slug,
+        nameKaz: child.nameKaz,
+        nameRus: child.nameRus,
+        imageUrl: child.imageUrl,
+        productCount: child._count.products,
+        totalCount: child._count.products,
+        children: [],
+      }));
+      const childTotal = children.reduce((sum, c) => sum + c.totalCount, 0);
+      return {
+        id: main.id,
+        slug: main.slug,
+        nameKaz: main.nameKaz,
+        nameRus: main.nameRus,
+        imageUrl: main.imageUrl,
+        productCount: main._count.products,
+        totalCount: main._count.products + childTotal,
+        children,
+      };
+    });
 }
 
 export async function getHitProducts(take = 6) {

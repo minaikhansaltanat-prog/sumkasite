@@ -9,6 +9,7 @@ export interface CategoryTile {
   nameKaz: string;
   nameRus: string;
   imageUrl: string | null;
+  totalCount?: number;
 }
 
 export function CategoriesGrid({ categories }: { categories: CategoryTile[] }) {
@@ -33,6 +34,11 @@ export function CategoriesGrid({ categories }: { categories: CategoryTile[] }) {
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
+              {c.totalCount === 0 && (
+                <span className="absolute top-3 right-3 bg-gold text-white text-[10px] font-bold uppercase px-2 py-1 rounded-full shadow-ribbon">
+                  Жақында
+                </span>
+              )}
               <span className="absolute bottom-4 left-4 text-white font-display text-lg sm:text-xl font-bold">
                 {lang === "kk" ? c.nameKaz : c.nameRus}
               </span>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getProducts, getCategories, getDistinctMaterials, getHitProducts, type ProductFilter } from "@/lib/queries";
+import { getProducts, getCategoryTree, getDistinctMaterials, getHitProducts, type ProductFilter } from "@/lib/queries";
 import { FilterSidebar } from "@/components/catalog/FilterSidebar";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { Pagination } from "@/components/catalog/Pagination";
@@ -29,7 +29,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       page,
       pageSize: 24,
     }),
-    getCategories(),
+    getCategoryTree(),
     getDistinctMaterials(),
     getHitProducts(4),
   ]);

@@ -33,6 +33,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const slug =
     data.slug && data.slug !== existing.slug ? await uniqueSlug(data.slug, params.id) : existing.slug;
 
+  if (data.parentId === params.id) {
+    return NextResponse.json({ error: "Категория өзіне-өзі ата-категория бола алмайды" }, { status: 400 });
+  }
+
   await prisma.category.update({
     where: { id: params.id },
     data: {
@@ -41,6 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       nameRus: data.nameRus ?? existing.nameRus,
       imageUrl: data.imageUrl !== undefined ? data.imageUrl : existing.imageUrl,
       order: data.order ?? existing.order,
+      parentId: data.parentId !== undefined ? data.parentId : existing.parentId,
     },
   });
   return NextResponse.json({ ok: true });
@@ -50,10 +55,19 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   const user = await requireRole(["ADMIN"]);
   if (!user) return NextResponse.json({ error: "Рұқсат жоқ" }, { status: 403 });
 
-  const productsCount = await prisma.product.count({ where: { categoryId: params.id } });
+  const [productsCount, childrenCount] = await Promise.all([
+    prisma.product.count({ where: { categoryId: params.id } }),
+    prisma.category.count({ where: { parentId: params.id } }),
+  ]);
   if (productsCount > 0) {
     return NextResponse.json(
       { error: `Бұл категорияда ${productsCount} өнім бар. Алдымен оларды басқа категорияға көшіріңіз.` },
+      { status: 409 }
+    );
+  }
+  if (childrenCount > 0) {
+    return NextResponse.json(
+      { error: `Бұл категорияда ${childrenCount} ішкі категория бар. Алдымен оларды жойыңыз немесе көшіріңіз.` },
       { status: 409 }
     );
   }

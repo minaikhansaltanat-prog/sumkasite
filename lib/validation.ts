@@ -40,6 +40,7 @@ export const categorySchema = z.object({
   slug: z.string().optional(),
   imageUrl: z.string().optional().nullable(),
   order: z.coerce.number().int().default(0),
+  parentId: z.string().optional().nullable(),
 });
 
 export const orderCreateSchema = z.object({

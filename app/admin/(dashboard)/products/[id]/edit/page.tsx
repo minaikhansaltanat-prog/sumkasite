@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getCategoryTree } from "@/lib/queries";
 import { ProductForm } from "@/components/admin/ProductForm";
 
 export const metadata = { title: "Сумканы өзгерту | SAMGA Admin" };
@@ -8,7 +9,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({ where: { id }, include: { images: { orderBy: { order: "asc" } } } }),
-    prisma.category.findMany({ orderBy: { order: "asc" } }),
+    getCategoryTree(),
   ]);
   if (!product) notFound();
 

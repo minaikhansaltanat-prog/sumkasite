@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       nameRus: data.nameRus,
       imageUrl: data.imageUrl ?? null,
       order: data.order,
+      parentId: data.parentId ?? null,
     },
   });
   return NextResponse.json({ id: category.id, slug: category.slug });
