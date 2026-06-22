@@ -17,7 +17,7 @@ const ORG_JSON_LD = {
   description: "Қазақстандағы оптом сумка каталогы",
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+77711681900",
+    telephone: "+77059039530",
     contactType: "sales",
     areaServed: "KZ",
   },
