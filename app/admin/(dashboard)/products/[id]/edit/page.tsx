@@ -1,15 +1,16 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCategoryTree } from "@/lib/queries";
+import { getCategoryTree, getSuppliers } from "@/lib/queries";
 import { ProductForm } from "@/components/admin/ProductForm";
 
 export const metadata = { title: "Сумканы өзгерту | SAMGA Admin" };
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([
+  const [product, categories, suppliers] = await Promise.all([
     prisma.product.findUnique({ where: { id }, include: { images: { orderBy: { order: "asc" } } } }),
     getCategoryTree(),
+    getSuppliers(),
   ]);
   if (!product) notFound();
 
@@ -18,6 +19,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <h1 className="font-display text-2xl font-bold mb-6">Сумканы өзгерту</h1>
       <ProductForm
         categories={categories}
+        suppliers={suppliers}
         initial={{
           id: product.id,
           nameKaz: product.nameKaz,
@@ -34,7 +36,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           material: product.material,
           color: product.color,
           size: product.size,
+          brand: product.brand,
           categoryId: product.categoryId,
+          supplierId: product.supplierId,
           isPublished: product.isPublished,
           isNew: product.isNew,
           isHit: product.isHit,

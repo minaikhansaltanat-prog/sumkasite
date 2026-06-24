@@ -28,7 +28,9 @@ export const productSchema = z.object({
   material: z.string().optional().default(""),
   color: z.string().optional().default(""),
   size: z.string().optional().default(""),
+  brand: z.string().optional().default(""),
   categoryId: z.string().min(1, "Категория міндетті"),
+  supplierId: z.string().optional().nullable(),
   isPublished: z.boolean().default(true),
   isNew: z.boolean().default(false),
   isHit: z.boolean().default(false),
@@ -42,6 +44,12 @@ export const categorySchema = z.object({
   imageUrl: z.string().optional().nullable(),
   order: z.coerce.number().int().default(0),
   parentId: z.string().optional().nullable(),
+});
+
+export const supplierSchema = z.object({
+  name: z.string().min(2, "Атауы міндетті"),
+  contact: z.string().optional().default(""),
+  note: z.string().optional().default(""),
 });
 
 export const orderCreateSchema = z.object({

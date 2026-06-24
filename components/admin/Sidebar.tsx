@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/admin/dashboard", label: "Дашборд" },
   { href: "/admin/products", label: "Сумкалар" },
   { href: "/admin/categories", label: "Категориялар" },
+  { href: "/admin/suppliers", label: "Жеткізушілер" },
   { href: "/admin/orders", label: "Тапсырыстар" },
 ];
 

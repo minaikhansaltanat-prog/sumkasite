@@ -15,10 +15,11 @@ export interface ProductFilter {
   onlyPublished?: boolean;
 }
 
-// costPrice (өндірістен келетін баға) бұл жерде ӓдейі жоқ — бұл тек admin
-// панелінде көрінуі керек ішкі ақпарат. Бұл select клиентке жіберілетін
-// объектіге қандай өрістер кіретінін толық бақылайды (include барлық
-// scalar өрісті автоматты қосады, сол себепті select қолданамыз).
+// costPrice, brand, supplierId/supplier бұл жерде ӓдейі жоқ — бұлар тек
+// admin панелінде көрінуі керек ішкі ақпарат (зауыт бағасы, бренд, жеткізуші
+// классификациясы). Бұл select клиентке жіберілетін объектіге қандай
+// өрістер кіретінін толық бақылайды (include барлық scalar өрісті
+// автоматты қосады, сол себепті select қолданамыз).
 const PRODUCT_SELECT = {
   id: true,
   slug: true,
@@ -205,6 +206,20 @@ export async function getHitProducts(take = 6) {
 export async function getCatalogStats() {
   const [productCount] = await Promise.all([prisma.product.count({ where: { isPublished: true } })]);
   return { productCount };
+}
+
+export async function getSuppliers() {
+  const suppliers = await prisma.supplier.findMany({
+    orderBy: { name: "asc" },
+    include: { _count: { select: { products: true } } },
+  });
+  return suppliers.map((s) => ({
+    id: s.id,
+    name: s.name,
+    contact: s.contact,
+    note: s.note,
+    productCount: s._count.products,
+  }));
 }
 
 export async function getDistinctMaterials() {

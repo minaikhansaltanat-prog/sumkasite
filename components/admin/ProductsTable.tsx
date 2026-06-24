@@ -12,10 +12,17 @@ interface Row {
   price: number;
   isPublished: boolean;
   category: { nameKaz: string };
+  supplier: { name: string } | null;
   images: { thumbUrl: string | null; url: string }[];
 }
 
-export function ProductsTable({ products }: { products: Row[] }) {
+interface SupplierOption {
+  id: string;
+  name: string;
+  productCount: number;
+}
+
+export function ProductsTable({ products, suppliers = [] }: { products: Row[]; suppliers?: SupplierOption[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,6 +49,14 @@ export function ProductsTable({ products }: { products: Row[] }) {
     router.push(`${pathname}?${next.toString()}`);
   }
 
+  function filterBySupplier(supplierId: string) {
+    const next = new URLSearchParams(searchParams.toString());
+    if (supplierId) next.set("supplier", supplierId);
+    else next.delete("supplier");
+    next.delete("page");
+    router.push(`${pathname}?${next.toString()}`);
+  }
+
   async function bulk(action: "publish" | "unpublish" | "delete") {
     if (selected.size === 0) return;
     if (action === "delete" && !confirm(`${selected.size} өнімді жою керек пе?`)) return;
@@ -63,7 +78,7 @@ export function ProductsTable({ products }: { products: Row[] }) {
   return (
     <div>
       <div className="flex flex-wrap gap-3 justify-between items-center mb-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -72,6 +87,18 @@ export function ProductsTable({ products }: { products: Row[] }) {
             className="h-10 px-3 rounded-card border border-line w-64 outline-none focus:border-gold"
           />
           <button onClick={search_} className="btn-secondary h-10 text-xs">Іздеу</button>
+          {suppliers.length > 0 && (
+            <select
+              value={searchParams.get("supplier") || ""}
+              onChange={(e) => filterBySupplier(e.target.value)}
+              className="h-10 px-3 rounded-card border border-line text-sm outline-none focus:border-gold"
+            >
+              <option value="">Барлық жеткізушілер</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name} ({s.productCount})</option>
+              ))}
+            </select>
+          )}
         </div>
         <Link href="/admin/products/new" className="btn-primary">+ Жаңа сумка қосу</Link>
       </div>
@@ -94,6 +121,7 @@ export function ProductsTable({ products }: { products: Row[] }) {
               <th className="py-3 px-3">Артикул</th>
               <th className="py-3 px-3">Атауы</th>
               <th className="py-3 px-3">Категория</th>
+              <th className="py-3 px-3">Жеткізуші</th>
               <th className="py-3 px-3">Баға</th>
               <th className="py-3 px-3">Күй</th>
               <th className="py-3 px-3" />
@@ -111,6 +139,7 @@ export function ProductsTable({ products }: { products: Row[] }) {
                 <td className="py-2 px-3 price-mono text-xs">{p.sku}</td>
                 <td className="py-2 px-3 max-w-xs truncate">{p.nameKaz}</td>
                 <td className="py-2 px-3 text-ink-muted">{p.category.nameKaz}</td>
+                <td className="py-2 px-3 text-ink-muted">{p.supplier?.name || "—"}</td>
                 <td className="py-2 px-3 price-mono text-gold">{p.price.toLocaleString("ru-RU")}</td>
                 <td className="py-2 px-3">
                   <span className={`label-tag px-2 py-1 rounded ${p.isPublished ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
@@ -124,7 +153,7 @@ export function ProductsTable({ products }: { products: Row[] }) {
               </tr>
             ))}
             {products.length === 0 && (
-              <tr><td colSpan={8} className="py-8 text-center text-ink-muted">Өнім табылмады</td></tr>
+              <tr><td colSpan={9} className="py-8 text-center text-ink-muted">Өнім табылмады</td></tr>
             )}
           </tbody>
         </table>

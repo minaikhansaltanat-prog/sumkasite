@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { MultiImageUploader, type UploaderImage } from "./MultiImageUploader";
 
 interface CategoryOption {
   id: string;
   nameKaz: string;
   children?: { id: string; nameKaz: string }[];
+}
+
+interface SupplierOption {
+  id: string;
+  name: string;
 }
 
 export interface ProductFormValues {
@@ -26,7 +32,9 @@ export interface ProductFormValues {
   material: string;
   color: string;
   size: string;
+  brand: string;
   categoryId: string;
+  supplierId: string | null;
   isPublished: boolean;
   isNew: boolean;
   isHit: boolean;
@@ -48,7 +56,9 @@ const EMPTY: ProductFormValues = {
   material: "",
   color: "",
   size: "",
+  brand: "",
   categoryId: "",
+  supplierId: null,
   isPublished: true,
   isNew: false,
   isHit: false,
@@ -57,9 +67,11 @@ const EMPTY: ProductFormValues = {
 
 export function ProductForm({
   categories,
+  suppliers = [],
   initial,
 }: {
   categories: CategoryOption[];
+  suppliers?: SupplierOption[];
   initial?: ProductFormValues;
 }) {
   const router = useRouter();
@@ -141,9 +153,9 @@ export function ProductForm({
         </Field>
       </Section>
 
-      <Section title="Өндіріс, бізге келетін баға">
+      <Section title="Ішкі ақпарат (тек админ панелінде)">
         <p className="text-xs text-ink-muted -mt-1 mb-1">
-          Бұл баға тек осы жерде, админ панелінде көрінеді. Сайттың қоғамдық беттерінде (каталог, өнім беті) ешқашан көрсетілмейді — тек маржаны есептеу үшін.
+          Бұл блоктағы деректер тек осы жерде көрінеді. Сайттың қоғамдық беттерінде (каталог, өнім беті) ешқашан көрсетілмейді — тек біздің өзіміздің есебіміз/классификациямыз үшін.
         </p>
         <Field label="Зауыттан келетін баға (тг)">
           <input
@@ -154,6 +166,31 @@ export function ProductForm({
             className="input"
           />
         </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Жеткізуші / Зауыт">
+            <select
+              value={values.supplierId ?? ""}
+              onChange={(e) => set("supplierId", e.target.value || null)}
+              className="input"
+            >
+              <option value="">— Белгісіз —</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Бренд (қапсырмадағы)">
+            <input
+              placeholder="мыс. Gucci, LV, Chanel..."
+              value={values.brand}
+              onChange={(e) => set("brand", e.target.value)}
+              className="input"
+            />
+          </Field>
+        </div>
+        <Link href="/admin/suppliers" target="_blank" className="text-xs text-gold hover:underline">
+          Жеткізушілер тізімін басқару →
+        </Link>
       </Section>
 
       <Section title="Баға мен мөлшер">

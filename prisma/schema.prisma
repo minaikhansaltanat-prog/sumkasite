@@ -58,8 +58,11 @@ model Product {
   material    String         @default("")
   color       String         @default("")
   size        String         @default("")
+  brand       String         @default("") // ішкі ғана: сумкадағы бренд (қапсырма), публикада көрсетілмейді
   categoryId  String
   category    Category       @relation(fields: [categoryId], references: [id])
+  supplierId  String? // ішкі ғана: қай зауыт/жеткізушіден келді, публикалық сұраулардан әдейі алынып тасталады
+  supplier    Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   images      ProductImage[]
   orders      Order[]
   isPublished Boolean        @default(true)
@@ -70,6 +73,18 @@ model Product {
 
   @@index([categoryId])
   @@index([isPublished])
+  @@index([supplierId])
+}
+
+// Ішкі классификация ғана: қай зауыт/жеткізушіден сумка келгенін бақылау үшін.
+// Клиентке ешқашан көрсетілмейді — тек admin панелінде.
+model Supplier {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  contact   String    @default("")
+  note      String    @default("")
+  products  Product[]
+  createdAt DateTime  @default(now())
 }
 
 model ProductImage {
