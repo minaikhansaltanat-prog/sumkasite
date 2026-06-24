@@ -4,16 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { useLang } from "@/components/layout/LangProvider";
-import { WhatsAppIcon } from "@/components/ui/icons";
-import { buildProductWhatsAppLink } from "@/lib/whatsapp";
+import { AddToCartIconButton } from "@/components/cart/AddToCartButton";
 
 export interface ProductCardData {
+  id: string;
   slug: string;
   sku: string;
   nameKaz: string;
   nameRus: string;
   price: number;
   retailPrice?: number | null;
+  minOrder: number;
   bundleSize: number;
   isNew: boolean;
   isHit: boolean;
@@ -71,15 +72,19 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           >
             {t("catalog", "viewProduct")}
           </Link>
-          <a
-            href={buildProductWhatsAppLink(product)}
-            target="_blank"
-            rel="noopener"
-            aria-label="WhatsApp"
-            className="flex items-center justify-center h-10 w-10 rounded-card bg-[#25D366] text-white shrink-0 hover:opacity-90 transition-opacity"
-          >
-            <WhatsAppIcon className="w-5 h-5" />
-          </a>
+          <AddToCartIconButton
+            product={{
+              productId: product.id,
+              slug: product.slug,
+              sku: product.sku,
+              nameKaz: product.nameKaz,
+              nameRus: product.nameRus,
+              price: product.price,
+              minOrder: product.minOrder,
+              bundleSize: product.bundleSize,
+              image: image?.thumbUrl || image?.url || null,
+            }}
+          />
         </div>
       </div>
     </div>

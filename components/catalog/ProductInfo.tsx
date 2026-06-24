@@ -6,6 +6,7 @@ import { ProductActions } from "./ProductActions";
 
 export interface ProductInfoData {
   id: string;
+  slug: string;
   nameKaz: string;
   nameRus: string;
   descKaz: string;
@@ -21,6 +22,7 @@ export interface ProductInfoData {
   isNew: boolean;
   isHit: boolean;
   category: { slug: string; nameKaz: string; nameRus: string };
+  images: { url: string; thumbUrl: string | null }[];
 }
 
 export function ProductInfo({ product }: { product: ProductInfoData }) {
@@ -76,10 +78,14 @@ export function ProductInfo({ product }: { product: ProductInfoData }) {
         <ProductActions
           product={{
             id: product.id,
+            slug: product.slug,
             nameKaz: product.nameKaz,
+            nameRus: product.nameRus,
             sku: product.sku,
             price: product.price,
             minOrder: product.minOrder,
+            bundleSize: product.bundleSize,
+            image: product.images[0]?.thumbUrl || product.images[0]?.url || null,
           }}
         />
       </div>

@@ -5,8 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { clsx } from "clsx";
 import { useLang } from "./LangProvider";
-import { MenuIcon, CloseIcon, SearchIcon, WhatsAppIcon, ChevronDown } from "@/components/ui/icons";
+import { MenuIcon, CloseIcon, SearchIcon, WhatsAppIcon, ChevronDown, CartIcon } from "@/components/ui/icons";
 import { buildGeneralWhatsAppLink } from "@/lib/whatsapp";
+import { useHydratedCart, cartCount } from "@/lib/cart-store";
 
 const links = [
   { href: "/", section: "home" as const, key: "home" as const },
@@ -80,12 +81,16 @@ export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
             <WhatsAppIcon className="w-4 h-4" />
             {t("home", "ctaWhatsapp")}
           </a>
+          <CartButton />
           <LangToggle lang={lang} setLang={setLang} />
         </div>
 
-        <button aria-label="Menu" className="lg:hidden p-2 text-white cursor-pointer" onClick={() => setOpen((v) => !v)}>
-          {open ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-        </button>
+        <div className="flex lg:hidden items-center gap-1 shrink-0">
+          <CartButton />
+          <button aria-label="Menu" className="p-2 text-white cursor-pointer" onClick={() => setOpen((v) => !v)}>
+            {open ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {categories.length > 0 && (
@@ -206,6 +211,22 @@ export function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
         </div>
       )}
     </header>
+  );
+}
+
+function CartButton() {
+  const items = useHydratedCart();
+  const count = cartCount(items);
+
+  return (
+    <Link href="/cart" aria-label="Себет" className="relative p-2 text-white hover:text-gold-light transition-colors">
+      <CartIcon className="w-6 h-6" />
+      {count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-gold text-[10px] font-bold leading-none">
+          {count}
+        </span>
+      )}
+    </Link>
   );
 }
 
