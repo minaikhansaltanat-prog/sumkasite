@@ -40,6 +40,7 @@ export async function POST(req: Request) {
         descKaz: data.descKaz,
         descRus: data.descRus,
         price: data.price,
+        costPrice: data.costPrice ?? null,
         retailPrice: data.retailPrice ?? null,
         minOrder: data.minOrder,
         bundleSize: data.bundleSize,

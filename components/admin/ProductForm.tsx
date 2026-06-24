@@ -18,6 +18,7 @@ export interface ProductFormValues {
   descKaz: string;
   descRus: string;
   price: number;
+  costPrice: number | null;
   retailPrice: number | null;
   minOrder: number;
   bundleSize: number;
@@ -39,6 +40,7 @@ const EMPTY: ProductFormValues = {
   descKaz: "",
   descRus: "",
   price: 0,
+  costPrice: null,
   retailPrice: null,
   minOrder: 10,
   bundleSize: 1,
@@ -139,9 +141,25 @@ export function ProductForm({
         </Field>
       </Section>
 
+      <Section title="Өндіріс, бізге келетін баға">
+        <p className="text-xs text-ink-muted -mt-1 mb-1">
+          Бұл баға тек осы жерде, админ панелінде көрінеді. Сайттың қоғамдық беттерінде (каталог, өнім беті) ешқашан көрсетілмейді — тек маржаны есептеу үшін.
+        </p>
+        <Field label="Зауыттан келетін баға (тг)">
+          <input
+            type="number"
+            min={0}
+            value={values.costPrice ?? ""}
+            onChange={(e) => set("costPrice", e.target.value ? Number(e.target.value) : null)}
+            className="input"
+          />
+        </Field>
+      </Section>
+
       <Section title="Баға мен мөлшер">
+        <p className="text-xs text-ink-muted -mt-1 mb-1">Бұл бағалар сайтта клиентке көрінеді.</p>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Оптом бағасы (тг)">
+          <Field label="Оптом сату бағасы (тг)">
             <input type="number" required value={values.price} onChange={(e) => set("price", Number(e.target.value))} className="input" />
           </Field>
           <Field label="Бөлшек бағасы (тг)">
@@ -152,6 +170,16 @@ export function ProductForm({
               className="input"
             />
           </Field>
+          {values.costPrice !== null && values.price > 0 && (
+            <div className="col-span-2 flex items-center gap-2 -mt-1">
+              <span className="label-tag">Маржа:</span>
+              <span className="text-sm font-semibold text-gold price-mono">
+                {(values.price - values.costPrice).toLocaleString("ru-RU")} тг
+                {" "}
+                ({Math.round(((values.price - values.costPrice) / values.price) * 100)}%)
+              </span>
+            </div>
+          )}
           <Field label="Кіші бума (дана)">
             <input type="number" value={values.bundleSize} onChange={(e) => set("bundleSize", Number(e.target.value))} className="input" />
           </Field>

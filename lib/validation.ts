@@ -20,6 +20,7 @@ export const productSchema = z.object({
   descKaz: z.string().optional().default(""),
   descRus: z.string().optional().default(""),
   price: z.coerce.number().int().positive("Баға дұрыс емес"),
+  costPrice: z.coerce.number().int().min(0).optional().nullable(),
   retailPrice: z.coerce.number().int().positive().optional().nullable(),
   minOrder: z.coerce.number().int().min(1).default(10),
   bundleSize: z.coerce.number().int().min(1).default(1),

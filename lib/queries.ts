@@ -15,10 +15,35 @@ export interface ProductFilter {
   onlyPublished?: boolean;
 }
 
-const PRODUCT_INCLUDE = {
+// costPrice (өндірістен келетін баға) бұл жерде ӓдейі жоқ — бұл тек admin
+// панелінде көрінуі керек ішкі ақпарат. Бұл select клиентке жіберілетін
+// объектіге қандай өрістер кіретінін толық бақылайды (include барлық
+// scalar өрісті автоматты қосады, сол себепті select қолданамыз).
+const PRODUCT_SELECT = {
+  id: true,
+  slug: true,
+  sku: true,
+  nameKaz: true,
+  nameRus: true,
+  descKaz: true,
+  descRus: true,
+  price: true,
+  retailPrice: true,
+  minOrder: true,
+  bundleSize: true,
+  stock: true,
+  material: true,
+  color: true,
+  size: true,
+  categoryId: true,
+  isPublished: true,
+  isNew: true,
+  isHit: true,
+  createdAt: true,
+  updatedAt: true,
   images: { orderBy: { order: "asc" as const } },
   category: true,
-};
+} satisfies Prisma.ProductSelect;
 
 async function resolveCategoryFilterIds(categorySlug: string) {
   const category = await prisma.category.findUnique({
@@ -80,7 +105,7 @@ export async function getProducts(filter: ProductFilter = {}) {
       orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: PRODUCT_INCLUDE,
+      select: PRODUCT_SELECT,
     }),
     prisma.product.count({ where }),
   ]);
@@ -91,7 +116,7 @@ export async function getProducts(filter: ProductFilter = {}) {
 export async function getProductBySlug(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
-    include: PRODUCT_INCLUDE,
+    select: PRODUCT_SELECT,
   });
 }
 
@@ -100,7 +125,7 @@ export async function getRelatedProducts(categoryId: string, excludeId: string, 
     where: { categoryId, isPublished: true, id: { not: excludeId } },
     take,
     orderBy: { createdAt: "desc" },
-    include: PRODUCT_INCLUDE,
+    select: PRODUCT_SELECT,
   });
 }
 
@@ -165,14 +190,14 @@ export async function getHitProducts(take = 6) {
     where: { isPublished: true, isHit: true },
     take,
     orderBy: { createdAt: "desc" },
-    include: PRODUCT_INCLUDE,
+    select: PRODUCT_SELECT,
   });
   if (hits.length >= take) return hits;
   const fallback = await prisma.product.findMany({
     where: { isPublished: true, id: { notIn: hits.map((h) => h.id) } },
     take: take - hits.length,
     orderBy: { createdAt: "desc" },
-    include: PRODUCT_INCLUDE,
+    select: PRODUCT_SELECT,
   });
   return [...hits, ...fallback];
 }

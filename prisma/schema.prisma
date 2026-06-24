@@ -50,6 +50,7 @@ model Product {
   descKaz     String         @default("")
   descRus     String         @default("")
   price       Int
+  costPrice   Int? // ішкі ғана: өндірістен келетін баға, публикалық сұраулардан әдейі алынып тасталады (lib/queries.ts)
   retailPrice Int?
   minOrder    Int            @default(10)
   bundleSize  Int            @default(1)
